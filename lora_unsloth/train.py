@@ -9,8 +9,8 @@ nohup python train.py >20250818_1.log 2>&1 &
 
 
 # ============== 1、加载模型、tokenizer ====================================
-local_model_path = '/root/sft/pretrained/unsloth/Qwen3-8B-unsloth-bnb-4bit'
-dataset_path = "data/keywords_data_train.jsonl"
+local_model_path = '/root/sft/pretrained/Qwen3-8B'
+dataset_path = "/root/train/unsloth/data/keywords_data_train.jsonl"
 
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name=local_model_path,
@@ -101,7 +101,7 @@ trainer = SFTTrainer(
     eval_dataset = None, # Can set up evaluation!
     args = SFTConfig(
         dataset_text_field = "text",
-        per_device_train_batch_size = 8,
+        per_device_train_batch_size = 32,
         gradient_accumulation_steps = 4, # Use GA to mimic batch size!
         warmup_steps = 5,
         num_train_epochs = 1, # Set this for 1 full training run.
@@ -112,6 +112,7 @@ trainer = SFTTrainer(
         weight_decay = 0.01,
         lr_scheduler_type = "linear",
         seed = 3407,
+        save_steps = 100,
         report_to = "none", # Use this for WandB etc
     ),
 )
@@ -126,24 +127,24 @@ print(f"{start_gpu_memory} GB of memory reserved.")
 trainer_stats=trainer.train()
 
 # 显示最终内存和时间统计信息
-used_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
-used_memory_for_lora = round(used_memory - start_gpu_memory, 3)
-used_percentage = round(used_memory / max_memory * 100, 3)
-lora_percentage = round(used_memory_for_lora / max_memory * 100, 3)
-print(f"{trainer_stats.metrics['train_runtime']} seconds used for training.")
-print(
-    f"{round(trainer_stats.metrics['train_runtime']/60, 2)} minutes used for training."
-)
-print(f"Peak reserved memory = {used_memory} GB.")
-print(f"Peak reserved memory for training = {used_memory_for_lora} GB.")
-print(f"Peak reserved memory % of max memory = {used_percentage} %.")
-print(f"Peak reserved memory for training % of max memory = {lora_percentage} %.")
+# used_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
+# used_memory_for_lora = round(used_memory - start_gpu_memory, 3)
+# used_percentage = round(used_memory / max_memory * 100, 3)
+# lora_percentage = round(used_memory_for_lora / max_memory * 100, 3)
+# print(f"{trainer_stats.metrics['train_runtime']} seconds used for training.")
+# print(
+#     f"{round(trainer_stats.metrics['train_runtime']/60, 2)} minutes used for training."
+# )
+# print(f"Peak reserved memory = {used_memory} GB.")
+# print(f"Peak reserved memory for training = {used_memory_for_lora} GB.")
+# print(f"Peak reserved memory % of max memory = {used_percentage} %.")
+# print(f"Peak reserved memory for training % of max memory = {lora_percentage} %.")
 
 
 # ==================== 4.保存训练结果 ====================================
 # 只保存lora适配器参数
-model.save_pretrained("/root/autodl-tmp/outputs/Qwen3-8B-sft-lora-adapter-unsloth")
-tokenizer.save_pretrained("/root/autodl-tmp/outputs/Qwen3-8B-sft-lora-adapter-unsloth")
+model.save_pretrained("outputs/Qwen3-8B-sft-lora-adapter-unsloth")
+tokenizer.save_pretrained("outputs/Qwen3-8B-sft-lora-adapter-unsloth")
 
 # model.save_pretrained_merged("/root/autodl-tmp/outputs/Qwen3-8B-sft-fp16", tokenizer, save_method = "merged_16bit",)
 # model.save_pretrained_merged("/root/autodl-tmp/outputs/Qwen3-8B-sft-int4", tokenizer, save_method = "merged_4bit",)
