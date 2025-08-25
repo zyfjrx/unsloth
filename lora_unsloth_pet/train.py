@@ -106,7 +106,7 @@ trainer = SFTTrainer(
         logging_steps = 1,
         optim = "adamw_8bit",
         weight_decay = 0.01,
-        lr_scheduler_type = "linear",
+        lr_scheduler_type = "cosine",
         seed = 3407,
         save_steps = 200,
         report_to = "tensorboard", # Use this for WandB etc
@@ -116,5 +116,5 @@ trainer_stats=trainer.train()
 
 # ==================== 4.保存训练结果 ====================================
 # 只保存lora适配器参数
-model.save_pretrained("outputs/Qwen3-14B-sft-lora-adapter-unsloth")
-tokenizer.save_pretrained("outputs/Qwen3-14B-sft-lora-adapter-unsloth")
+model.save_pretrained("outputs/Qwen3-14B-sft-lora-adapter-unsloth-cosine")
+tokenizer.save_pretrained("outputs/Qwen3-14B-sft-lora-adapter-unsloth-cosine")
